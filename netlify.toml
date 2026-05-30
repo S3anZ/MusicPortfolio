@@ -1,0 +1,60 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# ── Headers ──────────────────────────────────────────────────
+
+# Correct MIME type and cache controls for .lrc lyric files
+[[headers]]
+  for = "/music/lyrics/*.lrc"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# Cache audio files aggressively (they never change)
+[[headers]]
+  for = "/music/*.mp3"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache vinyl covers and other design PNGs aggressively
+[[headers]]
+  for = "/vinyls/**/*.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache root-level favicons aggressively
+[[headers]]
+  for = "/favicon*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/apple-touch-icon.png"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Cache and define MIME type for Web Manifest
+[[headers]]
+  for = "/site.webmanifest"
+  [headers.values]
+    Content-Type = "application/manifest+json; charset=utf-8"
+    Cache-Control = "public, max-age=86400, stale-while-revalidate=3600"
+
+# Cache hashed JS/CSS assets from Vite (fingerprinted filenames)
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# ── SPA fallback ─────────────────────────────────────────────
+# Not strictly needed for a single-page site, but ensures
+# direct URL visits always land on index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+

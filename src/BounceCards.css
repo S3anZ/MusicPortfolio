@@ -1,0 +1,51 @@
+.bounceCardsContainer {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  position: absolute;
+  width: 180px; /* Elegant size for covers */
+  aspect-ratio: 1;
+  pointer-events: auto; /* Ensures hover states are captured correctly */
+  background: transparent;
+}
+
+.card-inner {
+  width: 100%;
+  height: 100%;
+  transform-origin: center;
+  border: 2px solid rgba(201, 169, 110, 0.35); /* Elegant gold-dim border matching the theme */
+  border-radius: 6px; /* Real vinyl sleeve corner roundness */
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7), 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  background: var(--black);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover .card-inner {
+  border-color: var(--gold);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8), 0 0 15px rgba(201, 169, 110, 0.2);
+}
+
+.card .image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Adjust card size on smaller viewports */
+@media (max-width: 1200px) {
+  .card {
+    width: 140px;
+  }
+}
+
+@media (max-width: 768px) {
+  .bounceCardsContainer {
+    display: none !important; /* Hide on small screens to maintain layout readability */
+  }
+}

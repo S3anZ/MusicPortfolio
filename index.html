@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SeanZ — Producer Portfolio · A Sound Unfinished</title>
+  <meta name="description"
+    content="SeanZ — a music producer from Bengaluru, India. Six psychedelic, dark, cinematic movements. Listen to the EP 'A Sound Unfinished'." />
+  <meta property="og:title" content="SeanZ — A Sound Unfinished" />
+  <meta property="og:description" content="Six movements. Psychedelic, dark, cinematic. A producer's world." />
+  <meta property="og:type" content="music.album" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=IBM+Plex+Mono:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="/src/style.css" />
+  <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="shortcut icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+</head>
+
+<body>
+
+  <!-- Full-page WebGL Aurora Background -->
+  <div id="aurora-bg" class="aurora-container aurora-bg" aria-hidden="true"></div>
+
+  <!-- Custom cursor -->
+  <div id="cursor" aria-hidden="true"></div>
+  <div id="cursor-ring" aria-hidden="true"></div>
+  <div id="cursor-label" aria-hidden="true"></div>
+
+  <!-- Scroll progress -->
+  <div id="prog-top" role="progressbar" aria-label="Scroll progress" aria-valuenow="0" aria-valuemin="0"
+    aria-valuemax="100"></div>
+
+  <!-- Toast notifications -->
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ═══ UNLOCK SCREEN ═══ -->
+  <div id="unlock" role="dialog" aria-label="Welcome screen">
+    <div class="ul-rings">
+      <div class="ul-ring"></div>
+      <div class="ul-ring"></div>
+      <div class="ul-ring"></div>
+      <div class="ul-ring"></div>
+      <div class="ul-ring"></div>
+    </div>
+    <p class="ul-title">Sean<b>Z</b><br><em>A <b>Producer's</b> World</em></p>
+    <p class="ul-sub">Best experienced with sound</p>
+    <div class="ul-action-wrapper">
+      <!-- Audiography loader -->
+      <div id="ul-loader" class="ul-loader" aria-label="Loading portfolio">
+        <div class="ul-bar"></div>
+        <div class="ul-bar"></div>
+        <div class="ul-bar"></div>
+        <div class="ul-bar"></div>
+        <div class="ul-bar"></div>
+        <div class="ul-bar"></div>
+        <div class="ul-bar"></div>
+        <div class="ul-bar"></div>
+      </div>
+      <!-- Enter with Audio button -->
+      <button class="ul-btn" id="ulBtn" aria-label="Enter the portfolio with audio enabled">Enter with Audio</button>
+    </div>
+  </div>
+
+  <!-- ═══ NAVIGATION ═══ -->
+  <nav id="nav" aria-label="Site header">
+    <div class="nav-logo">Sean<b>Z</b></div>
+    <div class="nav-count" id="navCount" aria-label="Current track">
+      <div id="navCurrWrap" class="nav-curr-wrap-flex">
+        <span class="nc-static">00</span><div class="nc-curr-wrap"><span id="navCurr" class="nc-curr">1</span></div>
+      </div>
+      <span class="nc-total">&nbsp;/ 006</span>
+    </div>
+  </nav>
+
+  <!-- ═══ SETTINGS PANEL ═══ -->
+  <div id="settings-panel" class="settings-panel" aria-label="Settings">
+    <button id="settings-toggle" class="settings-toggle" aria-label="Toggle Settings">⚙</button>
+    <div class="settings-content">
+      <div class="settings-row">
+        <label for="setting-vol">Volume</label>
+        <input type="range" id="setting-vol" min="0" max="1" step="0.05" value="1" aria-label="Volume">
+      </div>
+      <div class="settings-row">
+        <label for="setting-autoplay">Autoplay Next</label>
+        <label class="switch">
+          <input type="checkbox" id="setting-autoplay" aria-label="Toggle Autoplay">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div class="settings-row" id="row-crossfade" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+        <label for="setting-crossfade">Crossfade (2s)</label>
+        <label class="switch">
+          <input type="checkbox" id="setting-crossfade" checked aria-label="Toggle Crossfade">
+          <span class="slider round"></span>
+        </label>
+      </div>
+      <div class="settings-row">
+        <label for="setting-stopscroll">Stop on scroll off</label>
+        <label class="switch">
+          <input type="checkbox" id="setting-stopscroll" checked aria-label="Toggle Stop on scroll off">
+          <span class="slider round"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ HUD ═══ -->
+  <div id="hud" class="hidden" aria-hidden="true">
+    <div class="hud-name" id="hudName">—</div>
+    <div class="hud-eq" id="hudEq">
+      <div class="hb"></div>
+      <div class="hb"></div>
+      <div class="hb"></div>
+      <div class="hb"></div>
+      <div class="hb"></div>
+      <div class="hb"></div>
+    </div>
+  </div>
+
+  <!-- ═══ SIDE DOTS ═══ -->
+  <nav id="dots" aria-label="Section navigation">
+    <button class="dot" data-i="1" data-l="Insomanic" aria-label="Go to Insomanic"></button>
+    <button class="dot" data-i="2" data-l="Glass Stranger" aria-label="Go to Glass Stranger"></button>
+    <button class="dot" data-i="3" data-l="Neon Ghost Rain" aria-label="Go to Neon Ghost Rain"></button>
+    <button class="dot" data-i="4" data-l="Was It Ever Real" aria-label="Go to Was It Ever Real"></button>
+    <button class="dot" data-i="5" data-l="Film You Never Shot" aria-label="Go to Film You Never Shot"></button>
+    <button class="dot" data-i="6" data-l="Peace In Between" aria-label="Go to Peace In Between"></button>
+  </nav>
+
+  <!-- ═══════════════════════ HERO ═══════════════════════ -->
+  <section class="sec" id="s0" data-i="0">
+    <div class="bnum" aria-hidden="true">EP</div>
+    <div class="h-eye">Bengaluru · India · 2024</div>
+    <h1 class="h-title">A Sound<br><em>Unfinished</em></h1>
+    <p class="h-desc">Six movements. Psychedelic, dark, cinematic. Produced in collaboration with Claude.</p>
+    <div id="hero-cards" class="hero-cards-container"></div>
+    <div class="h-stats" aria-label="EP statistics">
+      <div class="h-stat">
+        <span class="h-stat-num">Six</span>
+        <span class="h-stat-label">Tracks</span>
+      </div>
+      <div class="h-stat">
+        <span class="h-stat-num">One</span>
+        <span class="h-stat-label">World</span>
+      </div>
+      <div class="h-stat">
+        <span class="h-stat-num">∞</span>
+        <span class="h-stat-label">Frequencies</span>
+      </div>
+    </div>
+    <div class="h-scroll" aria-hidden="true">
+      <div class="scroll-ln"></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ TRACK 1: Insomanic ══════════════════ -->
+  <section class="sec tsec" id="s1" data-i="1" data-track="1" style="--ac:#a07ec8; --ac-rgb:rgba(160,126,200,.1);">
+    <div class="abar" style="background:#a07ec8;"></div>
+    <div class="t-left">
+      <div class="t-meta">
+        <span class="t-idx">001</span>
+        <div class="t-div"></div>
+        <span class="t-genre">Indie Electronica</span>
+      </div>
+      <h2 class="t-title">Inso<em>manic</em></h2>
+      <p class="t-inf">sleepless in frequencies</p>
+      <div class="wf-container">
+        <div class="wf" id="wf1" role="img" aria-label="Waveform visualiser for Insomanic"></div>
+        <div class="wf-glow"></div>
+      </div>
+      <div class="pctrl" id="pc1">
+        <button class="pbtn" id="pb1" data-track="1" aria-label="Play Insomanic">▶</button>
+        <div class="pbar-wrap">
+          <div class="pbar" data-track="1" role="slider" aria-label="Seek Insomanic" aria-valuenow="0" tabindex="0">
+            <div class="pfill" id="pf1"></div>
+          </div>
+          <span class="ptime" id="pt1">0:00 / 0:00</span>
+        </div>
+        <a class="slink" href="https://suno.com/s/yNHogIQyRZJtOwZF" target="_blank" rel="noopener">Suno ↗</a>
+      </div>
+      <div class="tags" id="tg1">
+        <span class="tag">808 Bass</span>
+        <span class="tag">Synth Pads</span>
+        <span class="tag">Midnight Reverb</span>
+      </div>
+    </div>
+    <div class="t-right">
+      <div class="t-art">
+        <div class="t-art-bg"></div>
+        <div class="t-art-num">01</div>
+      </div>
+      <img class="t-vinyl" src="/vinyls/Vinyls Png/Insomniac.png" alt="Vinyl" />
+      <div class="t-lyrics" id="lyr1" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ TRACK 2: Glass Stranger ══════════════════ -->
+  <section class="sec tsec" id="s2" data-i="2" data-track="2" style="--ac:#7eb8c8; --ac-rgb:rgba(126,184,200,.1);">
+    <div class="abar" style="background:#7eb8c8;"></div>
+    <div class="t-left">
+      <div class="t-meta">
+        <span class="t-idx">002</span>
+        <div class="t-div"></div>
+        <span class="t-genre">Dream Pop</span>
+      </div>
+      <h2 class="t-title">Glass <em>Stranger</em></h2>
+      <p class="t-inf">fragile and translucent</p>
+      <div class="wf-container">
+        <div class="wf" id="wf2" role="img" aria-label="Waveform visualiser for Glass Stranger"></div>
+        <div class="wf-glow"></div>
+      </div>
+      <div class="pctrl" id="pc2">
+        <button class="pbtn" id="pb2" data-track="2" aria-label="Play Glass Stranger">▶</button>
+        <div class="pbar-wrap">
+          <div class="pbar" data-track="2" role="slider" aria-label="Seek Glass Stranger" aria-valuenow="0"
+            tabindex="0">
+            <div class="pfill" id="pf2"></div>
+          </div>
+          <span class="ptime" id="pt2">0:00 / 0:00</span>
+        </div>
+        <a class="slink" href="https://suno.com/s/0cFrBekRynlocE85" target="_blank" rel="noopener">Suno ↗</a>
+      </div>
+      <div class="tags" id="tg2">
+        <span class="tag">Arpeggiated Synth</span>
+        <span class="tag">Delay</span>
+        <span class="tag">Tremolo Guitar</span>
+      </div>
+    </div>
+    <div class="t-right">
+      <div class="t-art">
+        <div class="t-art-bg"></div>
+        <div class="t-art-num">02</div>
+      </div>
+      <img class="t-vinyl" src="/vinyls/Vinyls Png/Glass Stranger.png" alt="Vinyl" />
+      <div class="t-lyrics" id="lyr2" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ TRACK 3: Neon Ghost Rain ══════════════════ -->
+  <section class="sec tsec" id="s3" data-i="3" data-track="3" style="--ac:#c96e8f; --ac-rgb:rgba(201,110,143,.1);">
+    <div class="abar" style="background:#c96e8f;"></div>
+    <div class="t-left">
+      <div class="t-meta">
+        <span class="t-idx">003</span>
+        <div class="t-div"></div>
+        <span class="t-genre">Dark Synth-Pop</span>
+      </div>
+      <h2 class="t-title">Neon Ghost <em>Rain</em></h2>
+      <p class="t-inf">after The Weeknd</p>
+      <div class="wf-container">
+        <div class="wf" id="wf3" role="img" aria-label="Waveform visualiser for Neon Ghost Rain"></div>
+        <div class="wf-glow"></div>
+      </div>
+      <div class="pctrl" id="pc3">
+        <button class="pbtn" id="pb3" data-track="3" aria-label="Play Neon Ghost Rain">▶</button>
+        <div class="pbar-wrap">
+          <div class="pbar" data-track="3" role="slider" aria-label="Seek Neon Ghost Rain" aria-valuenow="0"
+            tabindex="0">
+            <div class="pfill" id="pf3"></div>
+          </div>
+          <span class="ptime" id="pt3">0:00 / 0:00</span>
+        </div>
+        <a class="slink" href="https://suno.com/s/RkR6k4ZioXsyqCwe" target="_blank" rel="noopener">Suno ↗</a>
+      </div>
+      <div class="tags" id="tg3">
+        <span class="tag">TR-808</span>
+        <span class="tag">Prophet 6</span>
+        <span class="tag">Reverb Trails</span>
+      </div>
+    </div>
+    <div class="t-right">
+      <div class="t-art">
+        <div class="t-art-bg"></div>
+        <div class="t-art-num">03</div>
+      </div>
+      <img class="t-vinyl" src="/vinyls/Vinyls Png/Neon Ghost Rain.png" alt="Vinyl" />
+      <div class="t-lyrics" id="lyr3" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ TRACK 4: Was It Ever Real ══════════════════ -->
+  <section class="sec tsec" id="s4" data-i="4" data-track="4" style="--ac:#c9a96e; --ac-rgb:rgba(201,169,110,.1);">
+    <div class="abar" style="background:#c9a96e;"></div>
+    <div class="t-left">
+      <div class="t-meta">
+        <span class="t-idx">004</span>
+        <div class="t-div"></div>
+        <span class="t-genre">Ambient Ballad</span>
+      </div>
+      <h2 class="t-title">Was It <em>Ever Real?</em></h2>
+      <p class="t-inf">questions left unanswered</p>
+      <div class="wf-container">
+        <div class="wf" id="wf4" role="img" aria-label="Waveform visualiser for Was It Ever Real"></div>
+        <div class="wf-glow"></div>
+      </div>
+      <div class="pctrl" id="pc4">
+        <button class="pbtn" id="pb4" data-track="4" aria-label="Play Was It Ever Real">▶</button>
+        <div class="pbar-wrap">
+          <div class="pbar" data-track="4" role="slider" aria-label="Seek Was It Ever Real" aria-valuenow="0"
+            tabindex="0">
+            <div class="pfill" id="pf4"></div>
+          </div>
+          <span class="ptime" id="pt4">0:00 / 0:00</span>
+        </div>
+        <a class="slink" href="https://suno.com/s/YNNnHj6yPIIKdwJl" target="_blank" rel="noopener">Suno ↗</a>
+      </div>
+      <div class="tags" id="tg4">
+        <span class="tag">Rhodes Piano</span>
+        <span class="tag">Tape Delay</span>
+        <span class="tag">Soft Drums</span>
+      </div>
+    </div>
+    <div class="t-right">
+      <div class="t-art">
+        <div class="t-art-bg"></div>
+        <div class="t-art-num">04</div>
+      </div>
+      <img class="t-vinyl" src="/vinyls/Vinyls Png/Was it ever real.png" alt="Vinyl" />
+      <div class="t-lyrics" id="lyr4" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ TRACK 5: Film You Never Shot ══════════════════ -->
+  <section class="sec tsec" id="s5" data-i="5" data-track="5" style="--ac:#9ac87e; --ac-rgb:rgba(154,200,126,.1);">
+    <div class="abar" style="background:#9ac87e;"></div>
+    <div class="t-left">
+      <div class="t-meta">
+        <span class="t-idx">005</span>
+        <div class="t-div"></div>
+        <span class="t-genre">Indie Noir</span>
+      </div>
+      <h2 class="t-title">Film You <em>Never Shot</em></h2>
+      <p class="t-inf">after Arctic Monkeys</p>
+      <div class="wf-container">
+        <div class="wf" id="wf5" role="img" aria-label="Waveform visualiser for Film You Never Shot"></div>
+        <div class="wf-glow"></div>
+      </div>
+      <div class="pctrl" id="pc5">
+        <button class="pbtn" id="pb5" data-track="5" aria-label="Play Film You Never Shot">▶</button>
+        <div class="pbar-wrap">
+          <div class="pbar" data-track="5" role="slider" aria-label="Seek Film You Never Shot" aria-valuenow="0"
+            tabindex="0">
+            <div class="pfill" id="pf5"></div>
+          </div>
+          <span class="ptime" id="pt5">0:00 / 0:00</span>
+        </div>
+        <a class="slink" href="https://suno.com/s/51C6e5oUCCTzdV4U" target="_blank" rel="noopener">Suno ↗</a>
+      </div>
+      <div class="tags" id="tg5">
+        <span class="tag">Vintage Rhodes</span>
+        <span class="tag">Room Drums</span>
+        <span class="tag">Tremolo</span>
+      </div>
+    </div>
+    <div class="t-right">
+      <div class="t-art">
+        <div class="t-art-bg"></div>
+        <div class="t-art-num">05</div>
+      </div>
+      <img class="t-vinyl" src="/vinyls/Vinyls Png/Film you never shot.png" alt="Vinyl" />
+      <div class="t-lyrics" id="lyr5" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ TRACK 6: Peace In Between ══════════════════ -->
+  <section class="sec tsec" id="s6" data-i="6" data-track="6" style="--ac:#c8a07e; --ac-rgb:rgba(200,160,126,.1);">
+    <div class="abar" style="background:#c8a07e;"></div>
+    <div class="t-left">
+      <div class="t-meta">
+        <span class="t-idx">006</span>
+        <div class="t-div"></div>
+        <span class="t-genre">Meditative Ambient</span>
+      </div>
+      <h2 class="t-title">Peace <em>In Between</em></h2>
+      <p class="t-inf">the silence between notes</p>
+      <div class="wf-container">
+        <div class="wf" id="wf6" role="img" aria-label="Waveform visualiser for Peace In Between"></div>
+        <div class="wf-glow"></div>
+      </div>
+      <div class="pctrl" id="pc6">
+        <button class="pbtn" id="pb6" data-track="6" aria-label="Play Peace In Between">▶</button>
+        <div class="pbar-wrap">
+          <div class="pbar" data-track="6" role="slider" aria-label="Seek Peace In Between" aria-valuenow="0"
+            tabindex="0">
+            <div class="pfill" id="pf6"></div>
+          </div>
+          <span class="ptime" id="pt6">0:00 / 0:00</span>
+        </div>
+        <a class="slink" href="https://suno.com/s/WtwCi5hEVsF1zUC9" target="_blank" rel="noopener">Suno ↗</a>
+      </div>
+      <div class="tags" id="tg6">
+        <span class="tag">Ambient Texture</span>
+        <span class="tag">Pad Layers</span>
+        <span class="tag">Granular Reverb</span>
+      </div>
+    </div>
+    <div class="t-right">
+      <div class="t-art">
+        <div class="t-art-bg"></div>
+        <div class="t-art-num">06</div>
+      </div>
+      <img class="t-vinyl" src="/vinyls/Vinyls Png/Peace in Between.png" alt="Vinyl" />
+      <div class="t-lyrics" id="lyr6" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ ABOUT ══════════════════ -->
+  <section class="sec" id="s7" data-i="7">
+    <div class="bnum" style="-webkit-text-stroke-color:rgba(255,255,255,.055);" aria-hidden="true">SZ</div>
+    <div style="position:relative;z-index:2;width:100%;padding:0 var(--section-pad-x);">
+      <div class="ag">
+        <div>
+          <p class="alabel">About SeanZ</p>
+          <p class="atext" id="atext">
+            A producer from Bengaluru exploring the architecture of sound — psychedelic, dark, and cinematic.
+            Six tracks, one continuous world. This EP was built in collaboration with Claude and Suno.
+          </p>
+        </div>
+        <div>
+          <p class="alabel">Find the music</p>
+          <div class="slinks" id="slinks">
+            <a class="slink-row" href="https://suno.com/@sorturvishal" target="_blank" rel="noopener">
+              Suno <span style="color:var(--dim);">@seanZ</span>
+              <span class="slink-arr">↗</span>
+            </a>
+            <a class="slink-row" href="#" target="_blank" rel="noopener">
+              SoundCloud <span class="slink-arr">↗</span>
+            </a>
+            <a class="slink-row" href="#" target="_blank" rel="noopener">
+              Instagram <span class="slink-arr">↗</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Footer moved inside About section to stay perfectly visible on snap -->
+    <footer>
+      <span>SeanZ — 2024</span>
+      <span>Bengaluru, India</span>
+      <span>Built with Claude and Suno</span>
+    </footer>
+  </section>
+
+  <noscript>
+    <div class="noscript-msg">
+      <p>This portfolio requires JavaScript to experience the music and visuals.<br>Please enable JavaScript to
+        continue.</p>
+    </div>
+  </noscript>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
