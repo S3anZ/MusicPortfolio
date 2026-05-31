@@ -1750,8 +1750,47 @@ footer span {
     right: 24px;
   }
 
+  #s0 {
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    height: auto;
+    min-height: 100vh;
+  }
+
   .h-title {
     font-size: clamp(40px, 12vw, 72px);
+  }
+
+  .h-desc {
+    margin-top: 16px;
+    max-width: 100%;
+  }
+
+  .hero-cards-container {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    margin: 40px auto 28px auto !important;
+    z-index: 5;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+  }
+
+  .h-stats {
+    gap: clamp(16px, 4vw, 32px) !important;
+    margin-top: 24px !important;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .h-stats::after {
+    display: none !important;
   }
 
   .tsec {

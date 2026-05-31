@@ -257,10 +257,20 @@ function initHeroCards() {
   const container = document.getElementById('hero-cards');
   if (!container) return;
 
-  // Detect smaller desktop / laptop resolutions (width <= 1440 or height <= 900)
+  // Detect mobile and smaller desktop / laptop resolutions
+  const isMobile = window.innerWidth <= 768;
   const isSmallScreen = window.innerWidth <= 1440 || window.innerHeight <= 900;
-  const containerWidth = isSmallScreen ? 340 : 450;
-  const containerHeight = isSmallScreen ? 230 : 300;
+
+  let containerWidth = 450;
+  let containerHeight = 300;
+
+  if (isMobile) {
+    containerWidth = 240;
+    containerHeight = 160;
+  } else if (isSmallScreen) {
+    containerWidth = 340;
+    containerHeight = 230;
+  }
 
   const transformStyles = [
     'rotate(-12deg) translate(-10.5vw)',
