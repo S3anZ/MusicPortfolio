@@ -7,7 +7,7 @@
 
 import './style.css';
 import { initCursor, setCursorLabel } from './cursor.js';
-import { initAudio, toggle, seek, formatTime, getAudioContext, TRACK_NAMES, TRACKS, getNowPlaying } from './audio.js';
+import { initAudio, toggle, seek, formatTime, getAudioContext, TRACK_NAMES, TRACKS, TRACK_ACCENTS, getNowPlaying } from './audio.js';
 import { setAudioContext, playAmbient } from './ambient.js';
 import { buildWaveforms, startVisualiserLoop, resetBars } from './visualiser.js';
 import { initScroll, setAuroraInstance, goTo } from './scroll.js';
@@ -34,7 +34,10 @@ function onPlay(trackNum) {
   if (sec) sec.classList.add('playing');
 
   // Update tab title to reflect playing track
-  document.title = `Playing - ${TRACK_NAMES[trackNum]}`;
+  document.title = `▶︎ Playing - ${TRACK_NAMES[trackNum]}`;
+
+  // Set hero section accent color
+  document.documentElement.style.setProperty('--hero-accent-color', TRACK_ACCENTS[trackNum]);
 
   // Start visualiser loop (idempotent — safe to call multiple times)
   startVisualiserLoop();
@@ -56,6 +59,14 @@ function onPause(trackNum) {
     document.title = DEFAULT_TITLE;
   }
 
+  // Revert hero section accent color if nothing is playing, or switch to the other playing track
+  const activeTrack = getNowPlaying();
+  if (activeTrack === null) {
+    document.documentElement.style.removeProperty('--hero-accent-color');
+  } else {
+    document.documentElement.style.setProperty('--hero-accent-color', TRACK_ACCENTS[activeTrack]);
+  }
+
   // Reset waveform bars to resting state
   resetBars(trackNum);
   hideLyrics(trackNum);
@@ -71,11 +82,11 @@ function onEnd(trackNum) {
   }
 
   onPause(trackNum);
-  
+
   if (settingsState.autoplay && trackNum < 6) {
     const nextTrack = trackNum + 1;
     goTo(nextTrack);
-    
+
     // Slight delay to allow scroll animation to engage
     setTimeout(() => {
       const nextBtn = document.getElementById('pb' + nextTrack);
@@ -85,6 +96,7 @@ function onEnd(trackNum) {
 }
 
 function onTick(trackNum, audioEl) {
+  if (getNowPlaying() !== trackNum) return;
   if (!audioEl || !audioEl.duration) return;
   const pct = (audioEl.currentTime / audioEl.duration) * 100;
   const pf = document.getElementById('pf' + trackNum);
@@ -166,7 +178,7 @@ async function preloadAssets() {
       const audio = new Audio();
       audio.src = track.file;
       audio.preload = 'auto';
-      
+
       audio.addEventListener('loadedmetadata', () => {
         const pt = document.getElementById('pt' + trackNum);
         if (pt) {
@@ -195,12 +207,12 @@ function initUnlock() {
 
   const triggerReady = async () => {
     await preloadAssets();
-    
+
     // 1. Fade out the loader
     if (loader) {
       loader.classList.add('loaded');
     }
-    
+
     // 2. Fade in the "Enter with Audio" button shortly after
     setTimeout(() => {
       unlockBtn.classList.add('ready');
@@ -220,7 +232,7 @@ function initUnlock() {
     unlockScreen.classList.add('gone');
     toast('Audio enabled — scroll to begin');
     playAmbient(0);
-    
+
     // Trigger BounceCards entrance animation exactly when entering the site
     initHeroCards();
 
@@ -279,7 +291,7 @@ function initHeroCards() {
     onClick: (idx) => {
       const trackId = idx + 1;
       goTo(trackId);
-      
+
       // If it's not already playing, hit the play button shortly after scrolling starts
       if (getNowPlaying() !== trackId) {
         setTimeout(() => {

@@ -6,14 +6,19 @@
  */
 
 import { getFrequencyData, getTimeDomainData, getNowPlaying } from './audio.js';
+import { gsap } from 'gsap';
 
 // ── State ────────────────────────────────────────────────────
 const waveformBars = {};  // { trackNum: HTMLElement[] }
 let rafId = null;
 let isRunning = false;
+let hudBars = [];
 
 // ── Build waveform bars for all tracks ───────────────────────
 export function buildWaveforms() {
+  const isMobile = window.innerWidth <= 768;
+  const barCount = isMobile ? 40 : 100;
+
   for (let t = 1; t <= 6; t++) {
     const wf = document.getElementById('wf' + t);
     if (!wf) continue;
@@ -21,7 +26,6 @@ export function buildWaveforms() {
     // Clear existing bars
     wf.innerHTML = '';
     const bars = [];
-    const barCount = 100;
 
     for (let i = 0; i < barCount; i++) {
       const bar = document.createElement('div');
@@ -36,7 +40,20 @@ export function buildWaveforms() {
 
     waveformBars[t] = bars;
   }
+
+  // Cache the small HUD visualizer bars at the bottom right
+  hudBars = Array.from(document.querySelectorAll('#hudEq .hb'));
 }
+
+// Rebuild waveforms on crossing the mobile threshold (768px) to prevent vertical layout crunching
+let lastWidth = window.innerWidth;
+window.addEventListener('resize', () => {
+  const currentWidth = window.innerWidth;
+  if ((lastWidth > 768 && currentWidth <= 768) || (lastWidth <= 768 && currentWidth > 768)) {
+    buildWaveforms();
+  }
+  lastWidth = currentWidth;
+});
 
 // ── Start the single animation loop ──────────────────────────
 export function startVisualiserLoop() {
@@ -60,6 +77,28 @@ export function resetBars(trackNum) {
   bars.forEach(b => {
     b.style.height = b.dataset.h + 'px';
   });
+
+  // Reset HUD visualizer bars to resting state (3px)
+  if (hudBars.length === 6) {
+    hudBars.forEach(b => {
+      b.style.height = '3px';
+    });
+  }
+
+  // Smoothly fade out and shrink visualizer glow back to base state
+  const wfContainer = document.getElementById('wf' + trackNum);
+  if (wfContainer) {
+    const glow = wfContainer.parentElement?.querySelector('.wf-glow');
+    if (glow) {
+      gsap.to(glow, {
+        opacity: 0,
+        scale: 0.96,
+        duration: 0.8,
+        ease: 'power4.out',
+        overwrite: 'auto'
+      });
+    }
+  }
 }
 
 // ── Animation frame ──────────────────────────────────────────
@@ -95,13 +134,26 @@ function animate() {
         bar.style.height = newH + 'px';
       }
 
-      // Update glow intensity based on bass
+      // Update glow intensity and scale dynamically based on bass frequencies
       const bassAvg = (freqData[0] + freqData[1] + freqData[2] + freqData[3]) / (4 * 255);
       const wfContainer = document.getElementById('wf' + playing);
       if (wfContainer) {
         const glow = wfContainer.parentElement?.querySelector('.wf-glow');
         if (glow) {
-          glow.style.opacity = (0.04 + bassAvg * 0.18).toFixed(3);
+          // Dynamic scale and soft opacity shifts for high-performance organic breathing
+          glow.style.opacity = (0.02 + bassAvg * 0.14).toFixed(3);
+          glow.style.transform = `scale(${1.0 + bassAvg * 0.12})`;
+        }
+      }
+
+      // Drive the small HUD visualizer bars at the bottom right
+      if (hudBars.length === 6) {
+        const hudBins = [2, 6, 12, 22, 38, 64]; // Sub-bass to treble spectral mapping
+        for (let i = 0; i < 6; i++) {
+          const bin = hudBins[i];
+          const val = (freqData[bin] || 0) / 255;
+          const h = 3 + val * 15; // Map 0..1 range to 3px..18px height limits
+          hudBars[i].style.height = h.toFixed(1) + 'px';
         }
       }
     }

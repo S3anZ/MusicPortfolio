@@ -451,8 +451,9 @@ body::before {
 }
 
 .nav-logo b {
-  color: var(--gold);
+  color: var(--hero-accent-color, var(--gold));
   font-weight: 300;
+  transition: color 0.8s var(--ease-out-expo);
 }
 
 .nav-count {
@@ -544,13 +545,74 @@ body::before {
 }
 
 .dot.on {
-  background: var(--gold);
   transform: scale(1.8);
+  background: var(--gold);
   box-shadow: 0 0 12px rgba(201, 169, 110, 0.3);
 }
 
 .dot.on::after {
   color: var(--gold);
+}
+
+/* Track-Specific Dynamic Coloring for Left Dot Navigation */
+/* Track 1: Insomanic */
+.dot[data-i="1"]:hover::after,
+.dot[data-i="1"].on::after {
+  color: #a07ec8;
+}
+.dot[data-i="1"].on {
+  background: #a07ec8;
+  box-shadow: 0 0 12px rgba(160, 126, 200, 0.4);
+}
+
+/* Track 2: Glass Stranger */
+.dot[data-i="2"]:hover::after,
+.dot[data-i="2"].on::after {
+  color: #7eb8c8;
+}
+.dot[data-i="2"].on {
+  background: #7eb8c8;
+  box-shadow: 0 0 12px rgba(126, 184, 200, 0.4);
+}
+
+/* Track 3: Neon Ghost Rain */
+.dot[data-i="3"]:hover::after,
+.dot[data-i="3"].on::after {
+  color: #c96e8f;
+}
+.dot[data-i="3"].on {
+  background: #c96e8f;
+  box-shadow: 0 0 12px rgba(201, 110, 143, 0.4);
+}
+
+/* Track 4: Was It Ever Real */
+.dot[data-i="4"]:hover::after,
+.dot[data-i="4"].on::after {
+  color: #c9a96e;
+}
+.dot[data-i="4"].on {
+  background: #c9a96e;
+  box-shadow: 0 0 12px rgba(201, 169, 110, 0.4);
+}
+
+/* Track 5: Film You Never Shot */
+.dot[data-i="5"]:hover::after,
+.dot[data-i="5"].on::after {
+  color: #9ac87e;
+}
+.dot[data-i="5"].on {
+  background: #9ac87e;
+  box-shadow: 0 0 12px rgba(154, 200, 126, 0.4);
+}
+
+/* Track 6: Peace In Between */
+.dot[data-i="6"]:hover::after,
+.dot[data-i="6"].on::after {
+  color: #c8a07e;
+}
+.dot[data-i="6"].on {
+  background: #c8a07e;
+  box-shadow: 0 0 12px rgba(200, 160, 126, 0.4);
 }
 
 .dot.label-hidden::after {
@@ -617,42 +679,6 @@ body::before {
 
 .hud-eq.playing .hb {
   background: var(--gold);
-}
-
-.hud-eq.playing .hb:nth-child(1) {
-  animation: hb 0.5s ease infinite;
-}
-
-.hud-eq.playing .hb:nth-child(2) {
-  animation: hb 0.62s ease infinite 0.1s;
-}
-
-.hud-eq.playing .hb:nth-child(3) {
-  animation: hb 0.44s ease infinite 0.05s;
-}
-
-.hud-eq.playing .hb:nth-child(4) {
-  animation: hb 0.7s ease infinite 0.15s;
-}
-
-.hud-eq.playing .hb:nth-child(5) {
-  animation: hb 0.55s ease infinite 0.08s;
-}
-
-.hud-eq.playing .hb:nth-child(6) {
-  animation: hb 0.48s ease infinite 0.2s;
-}
-
-@keyframes hb {
-
-  0%,
-  100% {
-    height: 3px;
-  }
-
-  50% {
-    height: 18px;
-  }
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -779,8 +805,9 @@ body::before {
 
 .h-title em {
   font-style: italic;
-  color: var(--gold);
+  color: var(--hero-accent-color, var(--gold));
   display: block;
+  transition: color 0.8s var(--ease-out-expo);
 }
 
 .h-desc {
@@ -841,8 +868,9 @@ body::before {
   font-family: var(--mono);
   font-size: 8px;
   letter-spacing: 0.22em;
-  color: var(--gold);
+  color: var(--hero-accent-color, var(--gold));
   text-transform: uppercase;
+  transition: color 0.8s var(--ease-out-expo);
 }
 
 .h-scroll {
@@ -1151,18 +1179,14 @@ body::before {
 /* Frequency glow behind waveform */
 .wf-glow {
   position: absolute;
-  inset: -20px -10px;
-  background: radial-gradient(ellipse at 50% 50%, var(--ac, var(--gold)), transparent 70%);
+  inset: -45px -80px;
+  background: radial-gradient(ellipse at 50% 50%, var(--ac, var(--gold)), transparent 72%);
   opacity: 0;
-  transition: opacity 0.6s;
-  filter: blur(20px);
+  filter: blur(38px);
   pointer-events: none;
   z-index: -1;
-}
-
-.wf.playing~.wf-glow,
-.wf.playing+.wf-glow {
-  opacity: 0.08;
+  transform: scale(0.96);
+  will-change: transform, opacity;
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1196,7 +1220,7 @@ body::before {
   transform: translateY(12px);
   transition: opacity 0.7s var(--ease-out-expo), transform 0.7s var(--ease-out-expo);
   pointer-events: none;
-  z-index: 5;
+  z-index: 99;
   text-align: left;
   letter-spacing: 0.02em;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
@@ -1219,7 +1243,7 @@ body::before {
 }
 
 .lyric-line {
-  font-size: clamp(14px, 1.8vw, 20px);
+  font-size: clamp(11px, 1.4vw, 18px);
   line-height: 1.4;
   opacity: 0;
   transform: scale(0.95);
@@ -1245,15 +1269,44 @@ body::before {
 }
 
 @media (max-width: 1024px) {
+  .t-right {
+    overflow: visible; /* Prevent clipping of lyrics that overflow to the left */
+  }
+
   .t-lyrics {
-    max-width: 35%;
-    font-size: 16px;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: 4vw;
+  }
+
+  .lyric-line {
+    font-size: clamp(10px, 1.6vw, 15px);
   }
 }
 
 @media (max-width: 768px) {
+  .t-right {
+    overflow: visible; /* Prevent clipping of lyrics that overflow to the left */
+  }
+
   .t-lyrics {
-    display: none;
+    display: block;
+    position: absolute;
+    right: 16px;
+    top: calc(55% - 125px); /* Perfectly centers 250px height around 55% screen height without breaking transform slide-in */
+    width: 70vw;
+    max-width: 320px;
+    height: 250px;
+    z-index: 99;
+  }
+
+  .lyrics-scroll {
+    padding: 110px 0;
+    gap: 14px;
+  }
+
+  .lyric-line {
+    font-size: clamp(10px, 3.2vw, 14px);
   }
 }
 
@@ -1383,19 +1436,22 @@ body::before {
    ═══════════════════════════════════════════════════════════ */
 .abar {
   position: absolute;
-  left: 8vw;
-  top: var(--section-pad-y);
-  bottom: var(--section-pad-y);
-  width: 2px;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
   background: var(--ac, var(--gold));
   transform: scaleY(0);
+  opacity: 0;
   transform-origin: top;
-  transition: transform 1.1s var(--ease-out-expo) 0.15s;
-  border-radius: 1px;
+  transition: transform 1.3s cubic-bezier(0.16, 1, 0.3, 1), 
+              opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
 }
 
 .abar.vis {
   transform: scaleY(1);
+  opacity: 1;
 }
 
 /* BG color wash */
@@ -1573,8 +1629,15 @@ footer span {
     gap: 16px;
   }
 
+  .t-right {
+    overflow: visible; /* Prevent clipping of lyrics that overflow to the left */
+  }
+
   .t-lyrics {
     height: 200px;
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: 4vw;
   }
 
   .lyrics-scroll {
@@ -1583,7 +1646,7 @@ footer span {
   }
 
   .lyric-line {
-    font-size: clamp(13px, 1.6vw, 18px);
+    font-size: clamp(10px, 1.3vw, 16px);
   }
 
   /* Hero Section Compressions */
@@ -1699,13 +1762,13 @@ footer span {
     font-size: clamp(32px, 8vw, 56px);
   }
 
-  .abar {
-    left: 12px;
-    width: 1px;
+  .t-left {
+    padding: clamp(40px, 6vh, 80px) 4vw clamp(40px, 6vh, 80px) 6vw;
   }
 
   .wf {
     height: 56px;
+    gap: 1px; /* Tighter gap on mobile so 40 bars have plenty of thickness */
   }
 
   .pctrl {

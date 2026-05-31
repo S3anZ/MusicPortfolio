@@ -218,6 +218,8 @@ export function hideLyrics(trackNum) {
   if (el) {
     el.classList.remove('active');
   }
+  // Clear cached lyric index on pause/hide so resuming instantly triggers visibility updates
+  delete currentLyrIdx[trackNum];
 }
 
 // ── Developer Keyboard Lyric Tapper ──────────────────────────────
