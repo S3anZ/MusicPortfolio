@@ -6,8 +6,9 @@
  */
 
 import './style.css';
+import { gsap } from 'gsap';
 import { initCursor, setCursorLabel } from './cursor.js';
-import { initAudio, toggle, seek, formatTime, getAudioContext, TRACK_NAMES, TRACKS, TRACK_ACCENTS, getNowPlaying } from './audio.js';
+import { initAudio, preloadAudioTracks, toggle, seek, formatTime, getAudioContext, TRACK_NAMES, TRACKS, TRACK_ACCENTS, getNowPlaying, playSynthNote } from './audio.js';
 import { setAudioContext, playAmbient } from './ambient.js';
 import { buildWaveforms, startVisualiserLoop, resetBars } from './visualiser.js';
 import { initScroll, setAuroraInstance, goTo } from './scroll.js';
@@ -16,6 +17,8 @@ import { loadLyrics, updateLyrics, hideLyrics } from './lyrics.js';
 import initBounceCards from './BounceCards.js';
 import initAurora from './Aurora.js';
 import { initSettings, settingsState } from './settings.js';
+import { initProjects, PROJECTS_DATA } from './projects.js';
+import { initLenisScroll } from './lenisScroll.js';
 
 // ── Player UI helpers ────────────────────────────────────────
 const DEFAULT_TITLE = "SeanZ — Producer Portfolio · A Sound Unfinished";
@@ -25,13 +28,17 @@ function onPlay(trackNum) {
   const wf = document.getElementById('wf' + trackNum);
   const hudEq = document.getElementById('hudEq');
   const hudName = document.getElementById('hudName');
+  const hudPlayingName = document.getElementById('hudPlayingName');
   const sec = document.getElementById('s' + trackNum);
+  const hcPlay = document.getElementById('hcPlay');
 
   if (btn) { btn.textContent = '❚❚'; btn.classList.add('playing'); btn.setAttribute('aria-label', 'Pause ' + TRACK_NAMES[trackNum]); }
   if (wf) wf.classList.add('playing');
   if (hudEq) hudEq.classList.add('playing');
   if (hudName) { hudName.textContent = TRACK_NAMES[trackNum]; hudName.classList.add('on'); }
+  if (hudPlayingName) { hudPlayingName.textContent = TRACK_NAMES[trackNum]; hudPlayingName.classList.add('on'); }
   if (sec) sec.classList.add('playing');
+  if (hcPlay) hcPlay.textContent = '⏸';
 
   // Update tab title to reflect playing track
   document.title = `▶︎ Playing - ${TRACK_NAMES[trackNum]}`;
@@ -47,12 +54,16 @@ function onPause(trackNum) {
   const btn = document.getElementById('pb' + trackNum);
   const wf = document.getElementById('wf' + trackNum);
   const hudEq = document.getElementById('hudEq');
+  const hudPlayingName = document.getElementById('hudPlayingName');
   const sec = document.getElementById('s' + trackNum);
+  const hcPlay = document.getElementById('hcPlay');
 
   if (btn) { btn.textContent = '▶'; btn.classList.remove('playing'); btn.setAttribute('aria-label', 'Play ' + TRACK_NAMES[trackNum]); }
   if (wf) wf.classList.remove('playing');
   if (hudEq) hudEq.classList.remove('playing');
+  if (hudPlayingName) hudPlayingName.classList.remove('on');
   if (sec) sec.classList.remove('playing');
+  if (hcPlay) hcPlay.textContent = '▶';
 
   // Revert tab title to default if nothing else is playing
   if (getNowPlaying() === null) {
@@ -136,6 +147,62 @@ function initPlayButtons() {
   }
 }
 
+// ── Easter Egg: Tag Synth Notes ──────────────────────────────
+function initTags() {
+  const PENTATONIC_SCALE = [
+    261.63, 293.66, 329.63, 392.00, 440.00,
+    523.25, 587.33, 659.25, 783.99, 880.00
+  ];
+  
+  const tags = document.querySelectorAll('.tag');
+  tags.forEach((tag, index) => {
+    const freq = PENTATONIC_SCALE[index % PENTATONIC_SCALE.length];
+    
+    // Using inline styles for quick cursor override (normally handled in CSS, but this is an easter egg)
+    tag.style.cursor = window.matchMedia('(pointer: coarse)').matches ? 'pointer' : 'none';
+    
+    tag.addEventListener('click', (e) => {
+      // 1. Play the synth note
+      playSynthNote(freq);
+      
+      // 2. Spawn Mario Coin ♪
+      const coin = document.createElement('span');
+      // Alternate between musical notes
+      coin.textContent = index % 2 === 0 ? '♪' : '♫';
+      coin.style.position = 'fixed';
+      coin.style.left = (e.clientX - 10) + 'px';
+      coin.style.top = (e.clientY - 20) + 'px';
+      coin.style.color = 'var(--gold)';
+      coin.style.pointerEvents = 'none';
+      coin.style.zIndex = '9999';
+      coin.style.fontSize = '24px';
+      coin.style.textShadow = '0 0 12px rgba(201,169,110,0.6)';
+      document.body.appendChild(coin);
+      
+      // True Mario Coin physics: shoot up rapidly, fall slightly, and flip!
+      const tl = gsap.timeline({ onComplete: () => coin.remove() });
+      
+      // Spin/flip animation running in parallel
+      gsap.to(coin, { rotateY: 720, duration: 0.7, ease: 'linear' });
+
+      tl.to(coin, {
+        y: -100, // Shoot up
+        duration: 0.35,
+        ease: 'power2.out'
+      })
+      .to(coin, {
+        y: -40, // Fall back down slightly
+        opacity: 0,
+        duration: 0.35,
+        ease: 'power2.in'
+      });
+      
+      // 3. Physical bounce on the tag
+      gsap.fromTo(tag, { scale: 0.9 }, { scale: 1, duration: 0.4, ease: 'back.out(3)' });
+    });
+  });
+}
+
 // ── Wire up seek bars ────────────────────────────────────────
 function initSeekBars() {
   document.querySelectorAll('.pbar').forEach(bar => {
@@ -167,29 +234,27 @@ async function preloadAssets() {
     promises.push(new Promise((resolve) => {
       const img = new Image();
       img.src = src;
-      img.onload = resolve;
+      img.onload = () => {
+        img.decode().then(resolve).catch(resolve);
+      };
       img.onerror = resolve; // Continue even if error
     }));
   }
 
-  // Preload Audio
-  Object.entries(TRACKS).forEach(([trackNum, track]) => {
+  // Preload Project Images
+  for (const project of PROJECTS_DATA) {
     promises.push(new Promise((resolve) => {
-      const audio = new Audio();
-      audio.src = track.file;
-      audio.preload = 'auto';
-
-      audio.addEventListener('loadedmetadata', () => {
-        const pt = document.getElementById('pt' + trackNum);
-        if (pt) {
-          pt.textContent = '0:00 / ' + formatTime(audio.duration);
-        }
-      });
-
-      audio.addEventListener('canplaythrough', resolve, { once: true });
-      audio.addEventListener('error', resolve, { once: true });
+      const img = new Image();
+      img.src = project.img;
+      img.onload = () => {
+        img.decode().then(resolve).catch(resolve);
+      };
+      img.onerror = resolve; // Continue even if error
     }));
-  });
+  }
+
+  // Preload Audio tracks properly and populate durations
+  promises.push(preloadAudioTracks());
 
   // Guarantee a minimum of 2.2 seconds to show off the premium equalizer loader animation
   promises.push(new Promise(resolve => setTimeout(resolve, 2200)));
@@ -335,10 +400,66 @@ document.addEventListener('DOMContentLoaded', () => {
   initCursor();
   buildWaveforms();
   initPlayButtons();
+  initTags();
   initSeekBars();
   initUnlock();
+  initLenisScroll(); // Must be initialized before initProjects to fix ticker priority, and before initScroll to fix reload bug
+  initProjects(); // Must be initialized before initScroll
   initScroll();
   loadLyrics();
   initAuroraBg();
   initSettings();
+
+  const reachOut = document.getElementById('reach-out-link');
+  if (reachOut) {
+    reachOut.addEventListener('click', (e) => {
+      e.preventDefault();
+      goTo(7);
+    });
+  }
+
+  // Mini HUD Controls
+  const hcPrev = document.getElementById('hcPrev');
+  const hcPlay = document.getElementById('hcPlay');
+  const hcNext = document.getElementById('hcNext');
+  const hcTop = document.getElementById('hcTop');
+
+  if (hcPrev) {
+    hcPrev.addEventListener('click', () => {
+      let current = getNowPlaying() || 1;
+      let prev = current - 1;
+      if (prev < 1) prev = 6;
+      goTo(prev);
+      const btn = document.getElementById('pb' + prev);
+      if (btn && getNowPlaying() !== prev) btn.click();
+    });
+  }
+
+  if (hcNext) {
+    hcNext.addEventListener('click', () => {
+      let current = getNowPlaying() || 0;
+      let next = current + 1;
+      if (next > 6) next = 1;
+      goTo(next);
+      const btn = document.getElementById('pb' + next);
+      if (btn && getNowPlaying() !== next) btn.click();
+    });
+  }
+
+  if (hcPlay) {
+    hcPlay.addEventListener('click', () => {
+      let current = getNowPlaying();
+      if (current) {
+        toggle(current, { onPlay, onPause, onEnd, onTick });
+      } else {
+        toggle(1, { onPlay, onPause, onEnd, onTick });
+      }
+    });
+  }
+
+  if (hcTop) {
+    hcTop.addEventListener('click', () => {
+      goTo(0);
+    });
+  }
 });

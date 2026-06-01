@@ -66,6 +66,56 @@ export function getTimeDomainData() {
   return timeData;
 }
 
+export function playSynthNote(frequency = 440) {
+  if (!audioCtx) return;
+  
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  
+  // Use a mix of sine and triangle for a pleasant electric piano/bell sound
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+  
+  // Pluck envelope
+  gain.gain.setValueAtTime(0, audioCtx.currentTime);
+  gain.gain.linearRampToValueAtTime(0.1 * currentVolume, audioCtx.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+  
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  osc.start(audioCtx.currentTime);
+  osc.stop(audioCtx.currentTime + 0.6);
+}
+
+export function preloadAudioTracks() {
+  const promises = [];
+  Object.entries(TRACKS).forEach(([trackNum, track]) => {
+    promises.push(new Promise((resolve) => {
+      const audio = new Audio(track.file);
+      audio.crossOrigin = 'anonymous';
+      audio.preload = 'auto'; // Load as much as possible
+      audios[trackNum] = audio;
+
+      // Populate duration once metadata is loaded
+      audio.addEventListener('loadedmetadata', () => {
+        const pt = document.getElementById('pt' + trackNum);
+        if (pt) {
+          pt.textContent = '0:00 / ' + formatTime(audio.duration);
+        }
+      });
+
+      // Events for resolving the promise
+      audio.addEventListener('canplaythrough', resolve, { once: true });
+      audio.addEventListener('error', resolve, { once: true });
+      
+      // Some browsers require explicit load
+      audio.load();
+    }));
+  });
+  return Promise.all(promises);
+}
+
 // ── Initialise AudioContext (must be called from user gesture) ──
 export function initAudio() {
   if (unlocked && audioCtx) {
@@ -139,16 +189,16 @@ export function toggle(trackNum, callbacks = {}) {
     if (!track) return;
 
     const audio = new Audio(track.file);
+    audio.crossOrigin = 'anonymous';
     audio.preload = 'auto';
     audio.volume = currentVolume;
     audios[trackNum] = audio;
+  }
 
-    // Route through analyser
-    const source = audioCtx.createMediaElementSource(audio);
-    source.connect(analyser);
-    sources[trackNum] = source;
+  const audio = audios[trackNum];
 
-    // Events
+  // Wire up events if not already done
+  if (!audio._eventsWired) {
     audio.addEventListener('timeupdate', () => {
       if (onTick) onTick(trackNum, audio);
     });
@@ -167,6 +217,14 @@ export function toggle(trackNum, callbacks = {}) {
       }
       if (onEnd) onEnd(trackNum);
     });
+    audio._eventsWired = true;
+  }
+
+  // Route through analyser if not already done
+  if (!sources[trackNum]) {
+    const source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+    sources[trackNum] = source;
   }
 
   // Play

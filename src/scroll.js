@@ -10,6 +10,7 @@ import { playAmbient } from './ambient.js';
 import { isUnlocked } from './audio.js';
 import { gsap } from 'gsap';
 import { settingsState } from './settings.js';
+import { startLenis, stopLenis } from './lenisScroll.js';
 
 // ── State ────────────────────────────────────────────────────
 let lastSec = -1;
@@ -161,7 +162,10 @@ function onScroll() {
       activeIdx = i;
     }
   });
-  currentIdx = activeIdx;
+  
+  if (!isAnimating) {
+    currentIdx = activeIdx;
+  }
 
   // Update dots based on their data-i section mapping
   dots.forEach((d) => {
@@ -169,12 +173,18 @@ function onScroll() {
     d.classList.toggle('on', idx === currentIdx);
   });
 
+  if (currentIdx >= 8) {
+    startLenis();
+  } else {
+    stopLenis();
+  }
+
   // Hide dots when in hero section (scrolled < 60% of it), when in the About section (idx === 7), or at the footer/bottom
   const dotsNav = document.getElementById('dots');
   if (dotsNav) {
     const heroHeight = sections[0] ? sections[0].offsetHeight : window.innerHeight;
     const isAtBottom = (sy + window.innerHeight) >= (document.documentElement.scrollHeight - 60);
-    if (sy < heroHeight * 0.6 || currentIdx === 7 || isAtBottom) {
+    if (sy < heroHeight * 0.6 || currentIdx === 7 || currentIdx === 8 || isAtBottom) {
       dotsNav.classList.add('hidden');
     } else {
       dotsNav.classList.remove('hidden');
@@ -347,6 +357,7 @@ export function scrollToSection(index) {
   if (index < 0 || index >= sections.length) return;
 
   isAnimating = true;
+  stopLenis(); // Force Lenis to pause so it doesn't fight the GSAP snap tween
   currentIdx = index;
   scrollTarget = sections[index].offsetTop; // Keep target synchronized
 
@@ -375,6 +386,35 @@ export function scrollToSection(index) {
 }
 
 function onWheel(e) {
+  const dir = e.deltaY > 0 ? 1 : -1;
+  const isFreeScrollZone = currentIdx >= 8;
+
+  if (isFreeScrollZone) {
+    const sy = window.scrollY;
+    const freeZoneTop = sections[8].offsetTop;
+
+    if (dir === 1) {
+      // Let Lenis handle all downward scrolling once we reach the free zone
+      return;
+    } else if (dir === -1) {
+      const snapThreshold = freeZoneTop + window.innerHeight * 0.5;
+
+      if (sy > snapThreshold) {
+        // Deep in the grid, let Lenis scroll smoothly up
+        return;
+      }
+      
+      // If we crossed into the top 50vh of the Journey section, force a snap to the title
+      if (sy > freeZoneTop + 5 && sy <= snapThreshold) {
+        e.preventDefault();
+        scrollToSection(8);
+        return;
+      }
+
+      // If sy <= freeZoneTop + 5, we drop through to the standard logic, which snaps to s7
+    }
+  }
+
   e.preventDefault();
 
   accumulatedDelta += e.deltaY;
@@ -438,6 +478,11 @@ function snapToNearest() {
 function onKeyDown(e) {
   const keys = ['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Space'];
   if (!keys.includes(e.key)) return;
+
+  const isFreeScrollZone = currentIdx >= 8;
+  if (isFreeScrollZone) {
+    return; // Let Lenis or native browser handle keyboard scroll
+  }
 
   e.preventDefault();
 

@@ -13,6 +13,7 @@ const waveformBars = {};  // { trackNum: HTMLElement[] }
 let rafId = null;
 let isRunning = false;
 let hudBars = [];
+let jsfDots = [];
 
 // ── Build waveform bars for all tracks ───────────────────────
 export function buildWaveforms() {
@@ -43,6 +44,9 @@ export function buildWaveforms() {
 
   // Cache the small HUD visualizer bars at the bottom right
   hudBars = Array.from(document.querySelectorAll('#hudEq .hb'));
+
+  // Cache the dots in Journey So Far
+  jsfDots = Array.from(document.querySelectorAll('.jsf-dot'));
 }
 
 // Rebuild waveforms on crossing the mobile threshold (768px) to prevent vertical layout crunching
@@ -82,6 +86,13 @@ export function resetBars(trackNum) {
   if (hudBars.length === 6) {
     hudBars.forEach(b => {
       b.style.height = '3px';
+    });
+  }
+
+  // Reset JSF dots
+  if (jsfDots.length === 3) {
+    jsfDots.forEach(d => {
+      d.style.transform = 'translateY(0px)';
     });
   }
 
@@ -155,6 +166,27 @@ function animate() {
           const h = 3 + val * 15; // Map 0..1 range to 3px..18px height limits
           hudBars[i].style.height = h.toFixed(1) + 'px';
         }
+      }
+
+      // Drive the JSF dots (Journey So Far...) to the beat
+      if (jsfDots.length === 3) {
+        // Isolate distinct musical elements:
+        // Dot 1: Sub-bass (Bin 0: ~0-170Hz)
+        const subBass = Math.pow((freqData[0] || 0) / 255, 4);
+        
+        // Dot 2: Bass/Low-mid (Bin 2: ~340-510Hz)
+        const bass = Math.pow((freqData[2] || 0) / 255, 4);
+        
+        // Dot 3: Kicks & Snares
+        // Combines kick punch (Bin 1) with snare frequencies (Bins 12-18, ~2kHz - 3kHz)
+        const snareVal = ((freqData[12] || 0) + (freqData[18] || 0)) / 2 / 255;
+        const kickVal = (freqData[1] || 0) / 255;
+        const kickSnare = Math.pow(snareVal, 3) + Math.pow(kickVal, 5);
+
+        // Bounce up to -16px based strictly on their respective beats
+        jsfDots[0].style.transform = `translateY(${-subBass * 16}px)`;
+        jsfDots[1].style.transform = `translateY(${-bass * 16}px)`;
+        jsfDots[2].style.transform = `translateY(${-Math.min(1, kickSnare) * 16}px)`;
       }
     }
   }

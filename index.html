@@ -73,7 +73,8 @@
     <div class="nav-logo">Sean<b>Z</b></div>
     <div class="nav-count" id="navCount" aria-label="Current track">
       <div id="navCurrWrap" class="nav-curr-wrap-flex">
-        <span class="nc-static">00</span><div class="nc-curr-wrap"><span id="navCurr" class="nc-curr">1</span></div>
+        <span class="nc-static">00</span>
+        <div class="nc-curr-wrap"><span id="navCurr" class="nc-curr">1</span></div>
       </div>
       <span class="nc-total">&nbsp;/ 006</span>
     </div>
@@ -111,16 +112,25 @@
     </div>
   </div>
 
-  <!-- ═══ HUD ═══ -->
-  <div id="hud" class="hidden" aria-hidden="true">
-    <div class="hud-name" id="hudName">—</div>
-    <div class="hud-eq" id="hudEq">
-      <div class="hb"></div>
-      <div class="hb"></div>
-      <div class="hb"></div>
-      <div class="hb"></div>
-      <div class="hb"></div>
-      <div class="hb"></div>
+  <!-- HUD — Bottom-right (appears when unlocked) -->
+  <div id="hud" class="hidden">
+    <span class="hud-name" id="hudName">Track Name</span>
+    <div class="hud-eq-row">
+      <span class="hud-playing-name" id="hudPlayingName"></span>
+      <div class="hud-eq" id="hudEq">
+        <div class="hb"></div>
+        <div class="hb"></div>
+        <div class="hb"></div>
+        <div class="hb"></div>
+        <div class="hb"></div>
+        <div class="hb"></div>
+      </div>
+    </div>
+    <div class="hud-controls">
+      <button id="hcPrev" class="hud-btn" aria-label="Previous Track">⏮</button>
+      <button id="hcPlay" class="hud-btn" aria-label="Play/Pause">⏸</button>
+      <button id="hcNext" class="hud-btn" aria-label="Next Track">⏭</button>
+      <button id="hcTop" class="hud-btn" aria-label="Go to Top">⇪</button>
     </div>
   </div>
 
@@ -441,12 +451,38 @@
         </div>
       </div>
     </div>
-    <!-- Footer moved inside About section to stay perfectly visible on snap -->
-    <footer>
-      <span>SeanZ — 2024</span>
-      <span>Bengaluru, India</span>
-      <span>Built with Claude and Suno</span>
-    </footer>
+    </div>
+  </section>
+
+  <!-- ═══════════════════ JOURNEY SO FAR (LENIS SCROLL SECTION) ══════════════════ -->
+  <section class="sec projects-sec" id="s8" data-i="8"
+    style="flex-direction: column; justify-content: flex-start; align-items: stretch; display: block;">
+
+    <div class="projects-intro-container"
+      style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+      <h1 class="h-title" style="text-align: center;">Journey<br><em>So Far<span class="jsf-dot">.</span><span class="jsf-dot">.</span><span class="jsf-dot">.</span></em></h1>
+      <p class="h-desc" style="max-width: 600px; text-align: center;">"Not all songs live in speakers. Some live in
+        rooms, in crowds, in the space between the kick and the snare."</p>
+    </div>
+
+    <div id="projects-grid" class="projects-grid-container"></div>
+
+    <div class="projects-outro-container"
+      style="height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; text-align: center;">
+      <p class="h-desc" style="text-align: center; margin-left: 0;">If it sounds like something you've been looking for
+      </p>
+      <p class="h-desc" style="margin-top: 1rem; text-align: center; margin-left: 0;"><a href="#" id="reach-out-link"
+          class="slink">reach out</a>.</p>
+
+      <!-- Footer at the very bottom -->
+      <footer
+        style="position: absolute; bottom: 0; width: 100%; display: flex; justify-content: space-between; padding: 24px clamp(24px, 5vw, 48px); font-family: var(--mono); font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; opacity: 0.6;">
+        <span>SeanZ — 2024</span>
+        <span>Bengaluru, India</span>
+        <span>Built with Claude and Suno</span>
+      </footer>
+    </div>
+
   </section>
 
   <noscript>
